@@ -1,0 +1,89 @@
+DumbledORM Minidocs:
+
+Requirements:
+-PHP 5.3+ PDO
+-All tables must have a single (not composite) primary key called `id` that is an auto-incrementing integer
+-All foreign keys must follow the convention of table_name_id
+-All meta tables must be:
+ 	-named table_name_meta 
+ 	-have a foreign key to the corresponding parent table
+	-have a column called `key` 
+	-have a column called `val`
+
+
+Install/Operation:
+
+First ensure that your config.php is has the correct host, user, pass, etc.
+When you have set up your database or have made a change, go to the command line and type php -a and enter the following commands:
+require('config.php');
+require('dumbledorm.php');
+Builder::generateBase();
+
+Builder::generateBase() will always overwrite base.php but never any generated classes.
+
+If you want to prefix the classes that are generated:
+Builder::generateBase('myprefix');
+
+If you want to put the generated classes in a different directory than the default "model":
+Builder::generateBase(null,'mymodeldir/modelz');
+
+In order to use DumbledORM in your codes you need the following lines:
+require('config.php');
+require('dumbledorm.php');
+require('./model/base.php');
+
+That's it.  There's an autoloader built in for the generated classes.
+
+<?php
+$user = new User(13);  // load record with id 13
+$user->setName('Jason')->save();
+
+$user = new User(array(
+  'name' => 'Jason', 
+  'email' => 'jasonmoo@me.com', 
+));
+$user->save();
+$user->setName('Jason Mooberry')->save();  // updates single column
+
+User::one(array('name' => 'Jason'))->delete();
+
+// apply object methods to entire set at once
+PhoneNumber::select('`number` like "607%"')
+  ->setLocation('Ithaca, NY')
+  ->save();
+
+// array access to records by id
+$users = User::select('`name` like ?',$val);
+echo $users[13]->getId(); // 13
+
+// iterable by id and object
+foreach (User::select('`name` like ?',$val) as $id => $user) {
+  echo $user->getName().": $id\n";  // Jason: 13
+}
+
+$user->create(new PhoneNumber(array(
+  'type' => 'home', 
+  'number' => '607-333-2840', 
+)))->save();
+
+// get first phone number and set/save
+$user->getPhoneNumber()->setType('work')->save();
+
+// pass boolean true for list of results
+foreach ($user->getPhoneNumber(true) as $ph) {
+  echo $ph->getType().': '.$ph->getNumber();
+}
+
+// update all user phone numbers matching $type
+$user->getPhoneNumber('`type` = ?',$type)
+  ->setType($new_type)
+  ->save()
+
+$user->addMeta(array(
+  'background' => 'blue', 
+  'last_page' => '/', 
+));
+$user->setMeta('background','blue');
+$user->getMeta('background'); // blue
+$user->save();  // meta saved
+
