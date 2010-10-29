@@ -53,8 +53,6 @@ abstract class Db {
     return self::$_pdo ?: self::$_pdo = new PDO('mysql:host='.DbConfig::HOST.';dbname='.DbConfig::DBNAME, DbConfig::USER, DbConfig::PASSWORD);
   }
   public static function query($query,$params=null,$fetch_style=PDO::FETCH_ASSOC) {
-    // echo $query;
-    // var_dump($params);
     $stmt = self::pdo()->prepare($query);
     $stmt->execute((array)$params);
     return $stmt->fetchAll($fetch_style) ?: array();
