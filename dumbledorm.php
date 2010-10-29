@@ -1,12 +1,12 @@
 <?php
 class RecordNotFoundException extends Exception {}
 abstract class Builder {
-	public static function camelCase($string)	{
-		return ucfirst(preg_replace("/_(\w)/e","strtoupper('\\1')",strtolower($string)));
-	}
-	public static function unCamelCase($string)	{
-		return strtolower(preg_replace("/(\w)([A-Z])/","\\1_\\2",$string));
-	}
+  public static function camelCase($string)	{
+    return ucfirst(preg_replace("/_(\w)/e","strtoupper('\\1')",strtolower($string)));
+  }
+  public static function unCamelCase($string)	{
+    return strtolower(preg_replace("/(\w)([A-Z])/","\\1_\\2",$string));
+  }
   public static function generateBase($prefix=null,$dir='model') {
     $tables = array();
     foreach (Db::query('show tables',null,PDO::FETCH_NUM) as $row) {
