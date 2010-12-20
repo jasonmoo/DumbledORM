@@ -33,7 +33,7 @@ That's it.  There's an autoloader built in for the generated classes.
 
 ###Builder configuration
 
-`Builder::generateBase()` will always overwrite base.php but never any generated classes.
+`Builder::generateBase()` will always overwrite `base.php` but never any generated classes.
 
 If you want to prefix the classes that are generated:
 
@@ -43,6 +43,11 @@ If you want to put the generated classes in a different directory than the defau
 
 	Builder::generateBase(null,'mymodeldir/model');
 
+###Testing
+
+DumbledORM includes a simple test script.  You can run it from the command line.  Just modify the DbConfig in the test script to your params.
+
+	php test.php
 
 ##Usage
 

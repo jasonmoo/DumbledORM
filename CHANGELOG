@@ -1,7 +1,8 @@
 0.1 - Dec 18 2010
--fixed bug where certain data may be hydrated incorrectly in Db::hydrate
--added PDO::ERRMODE_EXCEPTION to connection attributes
 -added MIT License
+-updated and reformatted documentation (thanks to nvartolomei for the first pass)
+-fixed bug where certain data may be hydrated incorrectly in Db::hydrate
+-added PDO::ERRMODE_EXCEPTION to connection attributes (fixes bug reported by https://github.com/jiminoc)
 -added execute method to Db class
 -refactored save/delete methods to use new execute() method
 -updated test.php to use new execute() method
