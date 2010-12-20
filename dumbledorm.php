@@ -1,12 +1,72 @@
 <?php
+/**
+ *
+ *  DumbledORM
+ * 
+ *  http://github.com/jasonmoo/DumbledORM
+ * 
+ *  DumbledORM is a novelty PHP ORM
+ * 
+ *  Copyright (c) 2010 Jason Mooberry
+ * 
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is furnished
+ *  to do so, subject to the following conditions:
+ * 
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ * 
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ *  THE SOFTWARE.
+ *
+ */
+
+/**
+ * exceptional moments defined here
+ */
 class RecordNotFoundException extends Exception {}
+
+/**
+ * Builder class for required for generating base classes
+ *
+ */
 abstract class Builder {
+  
+  /**
+   * simple cameCasing method
+   *
+   * @param string $string 
+   * @return string
+   */
   public static function camelCase($string)	{
     return ucfirst(preg_replace("/_(\w)/e","strtoupper('\\1')",strtolower($string)));
   }
+  
+  /**
+   * simple un_camel_casing method
+   *
+   * @param string $string 
+   * @return string
+   */
   public static function unCamelCase($string)	{
     return strtolower(preg_replace("/(\w)([A-Z])/","\\1_\\2",$string));
   }
+  
+  /**
+   * re/generates base classes for db schema
+   *
+   * @param string $prefix 
+   * @param string $dir 
+   * @return void
+   */
   public static function generateBase($prefix=null,$dir='model') {
     $tables = array();
     foreach (Db::query('show tables',null,PDO::FETCH_NUM) as $row) {
@@ -46,48 +106,187 @@ abstract class Builder {
       }
     }
   }
+  
 }
+
+/**
+ * thin wrapper for PDO access 
+ *
+ */
 abstract class Db {
+  
+  /**
+   * singleton variable for PDO connection
+   *
+   */
   private static $_pdo;
+  
+  /**
+   * singleton getter for PDO connection
+   *
+   * @return PDO 
+   */
   public static function pdo() {
-    return self::$_pdo ?: self::$_pdo = new PDO('mysql:host='.DbConfig::HOST.';dbname='.DbConfig::DBNAME, DbConfig::USER, DbConfig::PASSWORD);
+    if (!self::$_pdo) {
+      self::$_pdo = new PDO('mysql:host='.DbConfig::HOST.';dbname='.DbConfig::DBNAME, DbConfig::USER, DbConfig::PASSWORD);
+      self::$_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
+    return self::$_pdo;
   }
-  public static function query($query,$params=null,$fetch_style=PDO::FETCH_ASSOC) {
-    $stmt = self::pdo()->prepare($query);
+  
+  /**
+   * execute sql as a prepared statement
+   *
+   * @param string $sql 
+   * @param mixed $params 
+   * @return PDOStatement
+   */
+  public static function execute($sql,$params=null) {
+    $stmt = self::pdo()->prepare($sql);
     $stmt->execute((array)$params);
-    return $stmt->fetchAll($fetch_style) ?: array();
+    return $stmt;
   }
+  
+  /**
+   * execute sql as a prepared statement and return all records
+   *
+   * @param string $query 
+   * @param mixed $params 
+   * @param PDO constant $fetch_style 
+   * @return Array
+   */
+  public static function query($query,$params=null,$fetch_style=PDO::FETCH_ASSOC) {
+    return self::execute($query,$params)->fetchAll($fetch_style);
+  }
+  
+  /**
+   * run a query and return the results as a ResultSet of BaseTable objects
+   *
+   * @param BaseTable $obj 
+   * @param string $query 
+   * @param mixed $params 
+   * @return ResultSet
+   */
   public static function hydrate(BaseTable $obj,$query,$params=null) {
     $set = array();
     foreach (self::query($query,$params) as $record) {
-      $obj = clone $obj;
-      $obj->hydrate($record);
-      $set[$obj->getId()] = $obj;
+      $clone = clone $obj;
+      $clone->hydrate($record);
+      $set[$clone->getId()] = $clone;
     }
     return new ResultSet($set);
   }
+  
 }
+
+/**
+ * class to manage result array more effectively
+ *
+ */
 final class ResultSet extends ArrayIterator {
+
+  /**
+   * magic method for applying called methods to all members of result set
+   *
+   * @param string $method 
+   * @param Array $params 
+   * @return $this
+   */
   public function __call($method,$params=array()) {
     foreach ($this as $obj) {
       call_user_func_array(array($obj,$method),$params);
     }
     return $this;
   }
+  
 }
+
+/**
+ * base functionality available to all objects extending from a generated base class
+ *
+ */
 abstract class BaseTable {
-  protected static $table, $pk, $relations, $meta_class, $meta_field;
-  protected $data, $meta, $relation_data, $id, $changed;
+  
+  protected static 
+    /**
+     * table name
+     */
+    $table, 
+    /**
+     * primary key
+     */
+    $pk, 
+    /**
+     * table relations array
+     */
+    $relations, 
+    /**
+     * metadata class name
+     */
+    $meta_class, 
+    /**
+     * metadata field
+     */
+    $meta_field;
+    
+  protected 
+    /**
+     * record data array
+     */
+    $data, 
+    /**
+     * metadata array
+     */
+    $meta, 
+    /**
+     * relation data array
+     */
+    $relation_data, 
+    /**
+     * record primary key value
+     */
+    $id, 
+    /**
+     * array of data fields that have changed since hydration
+     */
+    $changed;
+  
+  /**
+   * search for single record in self::$table
+   *
+   * @param Array $constraints 
+   * @return BaseTable
+   */
   final public static function one(Array $constraints) {
     return self::select('`'.implode('` = ? and `',array_keys($constraints)).'` = ? limit 1',array_values($constraints))->current();
   }
+  
+  /**
+   * search for any number of records in self::$table
+   *
+   * @param Array $constraints 
+   * @return ResultSet
+   */
   final public static function find(Array $constraints) {
     return self::select('`'.implode('` = ? and `',array_keys($constraints)).'` = ?',array_values($constraints));
   }
+  
+  /**
+   * execute a query in self::$table
+   *
+   * @param string $qs 
+   * @param mixed $params 
+   * @return ResultSet
+   */
   final public static function select($qs,$params=null) {
     return Db::hydrate(new static,'select * from `'.static::$table.'` where '.$qs,$params);    
   }
-      
+   
+  /**
+   * construct object and load supplied data or fetch data by supplied id
+   *
+   * @param mixed $val 
+   */   
   public function __construct($val=null) {
     if (is_array($val)) {
       $this->data = $val;
@@ -100,6 +299,15 @@ abstract class BaseTable {
       $this->hydrate($obj->toArray());
     }
   }
+  
+  /**
+   * most of the magic in here makes it all work
+   * - handles all getters and setters on columns and relations
+   *
+   * @param string $method 
+   * @param Array $params 
+   * @return mixed
+   */
   final public function __call($method,$params=array()) {
     $name = Builder::unCamelCase(substr($method,3,strlen($method)));
     if (strpos($method,'get')===0) {
@@ -127,12 +335,30 @@ abstract class BaseTable {
     throw new BadMethodCallException("No amount of magic can make $method work..");
   }
   
+  /**
+   * simple output object data as array
+   *
+   * @return Array
+   */
   final public function toArray() {
     return $this->data;
   }
+  
+  /**
+   * simple output object pk id
+   *
+   * @return integer
+   */
   final public function getId() {
     return $this->id;
   }
+  
+  /**
+   * store supplied data and bring object state to current
+   *
+   * @param Array $data 
+   * @return $this
+   */
   final public function hydrate(Array $data) {
     $this->id = $data[static::$pk];
     $this->data = $data;
@@ -140,9 +366,22 @@ abstract class BaseTable {
     $this->changed = array();
     return $this;
   }
+  
+  /**
+   * create an object with a defined relation to this one.
+   *
+   * @param BaseTable $obj 
+   * @return BaseTable
+   */
   final public function create(BaseTable $obj) {
     return $obj->{'set'.Builder::camelCase(static::$relations[Builder::unCamelCase(get_class($obj))]['fk'])}($this->id);
   }
+  
+  /**
+   * insert or update modified object data into self::$table and any associated metadata
+   *
+   * @return void
+   */
   public function save() {
     if (empty($this->changed)) return;
     if ($this->id) {
@@ -152,24 +391,44 @@ abstract class BaseTable {
       $query = 'insert into `'.static::$table.'` (`'.implode('`,`',array_keys($this->changed))."`) values (".rtrim(str_repeat('?,',count($this->changed)),',').")";
     }
     $vals = array_values(array_intersect_key($this->data,$this->changed));
-    Db::query($query,$vals);
+    Db::execute($query,$vals);
     if ($this->id === null) {
       $this->id = Db::pdo()->lastInsertId();
     }
     $this->meta->{'set'.Builder::camelCase(static::$meta_field)}($this->id)->save();
     $this->hydrate(self::one(array(static::$pk => $this->id))->toArray());
   }
+  
+  /**
+   * delete this object's record from self::$table and any associated meta data
+   *
+   * @return void
+   */
   public function delete() {
-    Db::query('delete from `'.static::$table.'` where `'.static::$pk.'` = ? limit 1',$this->getId());
+    Db::execute('delete from `'.static::$table.'` where `'.static::$pk.'` = ? limit 1',$this->getId());
     $this->meta->delete();
   }
   
+  /**
+   * add an array of key/val to the metadata 
+   *
+   * @param Array $data 
+   * @return $this
+   */
   public function addMeta(Array $data) {
     foreach ($data as $field => $val) {
       $this->setMeta($field,$val);
     }
     return $this;
   }
+  
+  /**
+   * set a field of metadata
+   *
+   * @param string $field 
+   * @param string $val 
+   * @return $this
+   */
   public function setMeta($field,$val) {
     if (empty($this->meta[$field])) {
       $meta_class = static::$meta_class;
@@ -180,9 +439,22 @@ abstract class BaseTable {
     }
     return $this;
   }
+  
+  /**
+   * get a field of metadata
+   *
+   * @param string $field 
+   * @return mixed
+   */
   public function getMeta($field) {
     return isset($this->meta[$field]) ? $this->meta[$field]->getVal() : null;
   }
+  
+  /**
+   * internally fetch and load any associated metadata
+   *
+   * @return void
+   */
   private function _loadMeta() {
     if (!$meta_class = static::$meta_class) {
       return $this->meta = new ResultSet;
@@ -190,6 +462,7 @@ abstract class BaseTable {
     foreach ($meta_class::find(array(static::$meta_field => $this->getId())) as $obj) {
       $meta[$obj->getKey()] = $obj;
     }
-    $this->meta = new ResultSet(@$meta ?: array());
+    $this->meta = new ResultSet((array)@$meta);
   }
+
 }

@@ -33,14 +33,14 @@ try {
   throw new OrmTestException('Unable to create test database.  Probably missing proper config.php or a permissions issue. ('.$e->getMessage().')');
 }
 try {
-  Db::query("CREATE TABLE `$dbname`.`user` (
+  Db::execute("CREATE TABLE `$dbname`.`user` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `email` varchar(255) NOT NULL,
     `active` tinyint(4) NOT NULL,
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-  Db::query("CREATE TABLE `$dbname`.`phone_number` (
+  Db::execute("CREATE TABLE `$dbname`.`phone_number` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `user_id` int(11) NOT NULL,
     `number` varchar(255) NOT NULL,
@@ -48,21 +48,21 @@ try {
     `location` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-  Db::query("CREATE TABLE `$dbname`.`post` (
+  Db::execute("CREATE TABLE `$dbname`.`post` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `user_id` int(11) NOT NULL,
     `title` varchar(255) NOT NULL,
     `body` text NOT NULL,
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-  Db::query("CREATE TABLE `$dbname`.`post_meta` (
+  Db::execute("CREATE TABLE `$dbname`.`post_meta` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `post_id` int(11) NOT NULL,
     `key` varchar(255) NOT NULL,
     `val` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
-  Db::query("CREATE TABLE `$dbname`.`orphan` (
+  Db::execute("CREATE TABLE `$dbname`.`orphan` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `age` varchar(255) NOT NULL,
@@ -157,10 +157,10 @@ try {
   
   OrmTest::assertTrue('Testing complete. ('.OrmTest::$fails.' fails)',!OrmTest::$fails);
 
-  Db::query("drop database $dbname");
+  Db::execute("drop database $dbname");
   exec("read -p 'Press enter to delete the test directory named: $dbname  OR CTRL+C TO ABORT'; rm -rf $dbname");
 } catch (Exception $e) {
-  Db::query("drop database $dbname");
+  Db::execute("drop database $dbname");
   exec("read -p 'Press enter to delete the test directory named: $dbname  OR CTRL+C TO ABORT'; rm -rf $dbname");
   throw new OrmTestException('Testing failed with a quickness! ('.$e->getMessage().')');
 } 

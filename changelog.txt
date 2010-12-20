@@ -1,6 +1,3 @@
-DumbledORM Changelog
-
-
 0.1 - Dec 18 2010
 -fixed bug where certain data may be hydrated incorrectly in Db::hydrate
 -added PDO::ERRMODE_EXCEPTION to connection attributes
