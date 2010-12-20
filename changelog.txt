@@ -1,0 +1,11 @@
+DumbledORM Changelog
+
+
+0.1 - Dec 18 2010
+-fixed bug where certain data may be hydrated incorrectly in Db::hydrate
+-added PDO::ERRMODE_EXCEPTION to connection attributes
+-added MIT License
+-added execute method to Db class
+-refactored save/delete methods to use new execute() method
+-updated test.php to use new execute() method
+
