@@ -35,6 +35,16 @@
 class RecordNotFoundException extends Exception {}
 
 /**
+ * Class for denoting sql that should be inserted into the query directly without escaping
+ *
+ */
+final class PlainSql {
+  private $_sql;
+  public function __construct($sql) { $this->_sql = $sql; }
+  public function __toString() { return $this->_sql; }
+}
+
+/**
  * Builder class for required for generating base classes
  *
  */
@@ -142,8 +152,23 @@ abstract class Db {
    * @return PDOStatement
    */
   public static function execute($sql,$params=null) {
+    
+    $params = is_array($params) ? $params : array($params);
+
+    if ($params) {
+      // using preg_replace_callback ensures that any inserted PlainSql
+      // with ?'s in it will not be confused for replacement markers
+      $sql = preg_replace_callback('/\?/',function($a) use (&$params) {
+        $a = array_shift($params);
+        if ($a instanceof PlainSql) {
+          return $a;
+        }
+        $params[] = $a;
+        return '?';
+      },$sql);
+    }
     $stmt = self::pdo()->prepare($sql);
-    $stmt->execute((array)$params);
+    $stmt->execute($params);
     return $stmt;
   }
   
@@ -385,6 +410,14 @@ abstract class BaseTable {
   public function save() {
     if (empty($this->changed)) return;
     $data = array_intersect_key($this->data,$this->changed);
+    
+    // use proper sql NULL for values set to php null
+    foreach ($data as $key => $value) {
+      if ($value === null) {
+        $data[$key] = new PlainSql('NULL');
+      }
+    }
+    
     if ($this->id) {
       $query = 'update `'.static::$table.'` set `'.implode('` = ?, `',array_keys($data)).'` = ? where `'.static::$pk.'` = '.$this->id.' limit 1';
     }

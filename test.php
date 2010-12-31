@@ -38,6 +38,7 @@ try {
     `name` varchar(255) NOT NULL,
     `email` varchar(255) NOT NULL,
     `active` tinyint(4) NOT NULL,
+    `created_at` datetime NOT NULL,
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
   Db::execute("CREATE TABLE `$dbname`.`phone_number` (
@@ -45,7 +46,7 @@ try {
     `user_id` int(11) NOT NULL,
     `number` varchar(255) NOT NULL,
     `type` varchar(255) NOT NULL,
-    `location` varchar(255) NOT NULL,
+    `location` varchar(255),
     PRIMARY KEY (`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
   Db::execute("CREATE TABLE `$dbname`.`post` (
@@ -87,6 +88,7 @@ try {
     $user = new User(array(
       'name' => $name, 
       'email' => "$name@not_a_domain.com", 
+      'created_at' => new PlainSql('NOW()'), 
       'active' => 1, 
     ));
     $user->save();
@@ -121,13 +123,14 @@ try {
   foreach (array(111,222,333,444,555) as $prefix) {
     $user->create(new PhoneNumber(array(
       'type' => 'home', 
-      'number' => '607-'.$prefix.'-0000', 
+      'number' => '607-'.$prefix.'-0000',
+      'location' => null,  
     )))->save();
   }
 
   OrmTest::assertTrue('Loading records to test method appication to entire results set.',true);
 
-  PhoneNumber::select('`number` like "607%"')
+  PhoneNumber::select('`number` like "607%" and `location` IS NULL')
     ->setLocation('Ithaca, NY')
     ->setType('Cell Phone')
     ->save();
