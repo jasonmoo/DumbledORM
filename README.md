@@ -70,11 +70,11 @@ DumbledORM includes a simple test script.  You can run it from the command line.
 	User::find(array('name' => 'Jason','job' => 'PHP Dev'))->delete();
 
 ####Find all records matching a query and modify them
-  // applies setLocation and save to the entire set
-  PhoneNumber::select('`number` like "607%"')
-    ->setLocation('Ithaca, NY')
-    ->setType(null)  // sets field to SQL NULL
-    ->save();
+    // applies setLocation and save to the entire set
+    PhoneNumber::select('`number` like "607%"')
+      ->setLocation('Ithaca, NY')
+      ->setType(null)  // sets field to SQL NULL
+      ->save();
 
 ####Find all records matching a query and access a single record by id
 	$users = User::select('`name` like ?',$val);
