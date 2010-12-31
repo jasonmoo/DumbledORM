@@ -2,8 +2,11 @@
 /**
  *
  *  DumbledORM
- * 
- *  http://github.com/jasonmoo/DumbledORM
+ *  
+ *  @version 0.1.1
+ *  @author Jason Mooberry <jasonmoo@me.com>
+ *  @link http://github.com/jasonmoo/DumbledORM
+ *  @package DumbledORM
  * 
  *  DumbledORM is a novelty PHP ORM
  * 

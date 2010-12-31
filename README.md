@@ -55,6 +55,7 @@ DumbledORM includes a simple test script.  You can run it from the command line.
 	$user = new User(array(
 	  'name' => 'Jason', 
 	  'email' => 'jasonmoo@me.com', 
+	  'created_at' => new PlainSql('NOW()'), 
 	));
 	$user->save();
 
@@ -65,10 +66,14 @@ DumbledORM includes a simple test script.  You can run it from the command line.
 ####Find a single record and delete it
 	User::one(array('name' => 'Jason'))->delete();
 
+####Find all records matching both fields and delete them all 
+	User::find(array('name' => 'Jason','job' => 'PHP Dev'))->delete();
+
 ####Find all records matching a query and modify them
 	// applies setLocation and save to the entire set
 	PhoneNumber::select('`number` like "607%"')
-	  ->setLocation('Ithaca, NY')
+    ->setLocation('Ithaca, NY')
+    ->setType(null)  // sets field to SQL NULL
 	  ->save();
 
 ####Find all records matching a query and access a single record by id

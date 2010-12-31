@@ -7,3 +7,8 @@
 -refactored save/delete methods to use new execute() method
 -updated test.php to use new execute() method
 
+0.1.1 - Dec 31 2010
+-Big bugfix on updates that caused updating multiple fields in a single save() to fail
+-Fixed bug where ordering in update data fields may be mismatched
+-Added new PlainSql class for inserting plain sql such as NOW() or DATE(NOW()) into sql values
+-Setting null to a field in php will set the field to NULL in mysql update/insert statement (before only set to empty string)
