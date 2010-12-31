@@ -384,14 +384,14 @@ abstract class BaseTable {
    */
   public function save() {
     if (empty($this->changed)) return;
+    $data = array_intersect_key($this->data,$this->changed);
     if ($this->id) {
-      $query = 'update `'.static::$table.'` set `'.implode('` = ? and `',array_keys($this->changed)).'` = ? where `'.static::$pk.'` = '.$this->id.' limit 1';
+      $query = 'update `'.static::$table.'` set `'.implode('` = ?, `',array_keys($data)).'` = ? where `'.static::$pk.'` = '.$this->id.' limit 1';
     }
     else {
-      $query = 'insert into `'.static::$table.'` (`'.implode('`,`',array_keys($this->changed))."`) values (".rtrim(str_repeat('?,',count($this->changed)),',').")";
+      $query = 'insert into `'.static::$table.'` (`'.implode('`,`',array_keys($data))."`) values (".rtrim(str_repeat('?,',count($data)),',').")";
     }
-    $vals = array_values(array_intersect_key($this->data,$this->changed));
-    Db::execute($query,$vals);
+    Db::execute($query,array_values($data));
     if ($this->id === null) {
       $this->id = Db::pdo()->lastInsertId();
     }

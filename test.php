@@ -126,10 +126,13 @@ try {
   }
 
   OrmTest::assertTrue('Loading records to test method appication to entire results set.',true);
+
   PhoneNumber::select('`number` like "607%"')
     ->setLocation('Ithaca, NY')
+    ->setType('Cell Phone')
     ->save();
-  $phones = PhoneNumber::find(array('location' => 'Ithaca, NY'));
+
+  $phones = PhoneNumber::find(array('location' => 'Ithaca, NY','type' => 'Cell Phone'));
   OrmTest::assertTrue('Checking to see if method application applied correctly.',count($phones) === 5);
 
   OrmTest::assertTrue('Testing getRelationClassName style magic method (singular).',$user->getPhoneNumber()->getLocation() === 'Ithaca, NY');
