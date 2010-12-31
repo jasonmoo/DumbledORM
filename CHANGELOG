@@ -12,3 +12,5 @@
 -Fixed bug where ordering in update data fields may be mismatched
 -Added new PlainSql class for inserting plain sql such as NOW() or DATE(NOW()) into sql values
 -Setting null to a field in php will set the field to NULL in mysql update/insert statement (before only set to empty string)
+-Updated the docs with some undocumented functionality
+-Updated test.php with more tests for new/previously undocumented functionality

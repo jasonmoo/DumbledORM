@@ -81,7 +81,7 @@ DumbledORM includes a simple test script.  You can run it from the command line.
 	echo $users[13]->getId(); // 13
 
 ####Find all records matching a query and iterate over them
-	foreach (User::select('`name` like ?',$val) as $id => $user) {
+	foreach (User::select('`name` like ? and `job` IS NOT NULL order by `name`',$val) as $id => $user) {
 	  echo $user->getName().": $id\n";  // Jason: 13
 	}
 

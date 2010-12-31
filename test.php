@@ -130,7 +130,7 @@ try {
 
   OrmTest::assertTrue('Loading records to test method appication to entire results set.',true);
 
-  PhoneNumber::select('`number` like "607%" and `location` IS NULL')
+  PhoneNumber::select('`number` like "607%" and `location` IS NULL order by `number`')
     ->setLocation('Ithaca, NY')
     ->setType('Cell Phone')
     ->save();
