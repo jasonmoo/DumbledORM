@@ -141,7 +141,7 @@ abstract class Db {
    */
   public static function pdo() {
     if (!self::$_pdo) {
-      self::$_pdo = new PDO('mysql:host='.DbConfig::HOST.';dbname='.DbConfig::DBNAME, DbConfig::USER, DbConfig::PASSWORD);
+      self::$_pdo = new PDO('mysql:host='.DbConfig::HOST.';port='.DbConfig::PORT.';dbname='.DbConfig::DBNAME, DbConfig::USER, DbConfig::PASSWORD);
       self::$_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     return self::$_pdo;
