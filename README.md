@@ -16,13 +16,8 @@ A PHP Novelty ORM
 ##Setup:
 
 1. Download/clone DumbledORM
-2. Ensure that your config.php is has the correct host, user, pass, etc.
-3. When you have set up your database or have made a change, go to the command line and type `php -a` and enter the following commands:
-
-		require('config.php');
-		require('dumbledorm.php');
-		Builder::generateBase();
-
+2. Ensure that your config.php has the correct host, user, pass, etc.
+3. When you have set up your database or have made a change, go to the command line and type ```./generate.php```
 4. Add the following lines to your code:
 
 		require('config.php');
@@ -31,7 +26,53 @@ A PHP Novelty ORM
 
 That's it.  There's an autoloader built in for the generated classes.
 
+###Database configuration
+
+The PHP Data objects or PDO extension is used to access mysql and the configuration file `config.php` is home for class
+DbConfig the source where DumbledORM finds your database settings.
+
+You are able to configure the settings for host, port, database, username and password.
+
+```
+      class DbConfig {
+        const HOST = 'localhost';
+        const PORT = 3306;
+        const DBNAME = 'test_database';
+        const USER = 'root';
+        const PASSWORD = 'password';
+      }
+```
+
+NOTE: On rare occations mysql will not resolve localhost and PDO will attempt to connect to a unix socket,
+if this fails you will likely find a PDOException complaining that there is "No such file or directory".
+By changing localhost to the ip 127.0.0.1 instead mysql will be able to resolve the host and a connection can be established.
+
+###CLI Script generate.php
+
+DumbledORM includes a PHP CLI shell script to automagically generate your database schema model classes.
+
+At the command line type ```./generate -h``` for usage
+
+```
+        Generate DumbledORM models.
+
+          Usage:
+          ./generate.php <option>
+
+          <option>
+              -h, -?, --help, -help            Print this help message
+              -p, --prefix <prefix>            Prefix generated classes
+              -d, --dir <directory>            Output directory for the model instead of the default ./model
+```
+
+
 ###Builder configuration
+
+The hardcore 1337 way to generate the model, go to the command line and type `php -a` and enter the following commands:
+
+		require('config.php');
+		require('dumbledorm.php');
+		Builder::generateBase();
 
 `Builder::generateBase()` will always overwrite `base.php` but never any generated classes.
 
