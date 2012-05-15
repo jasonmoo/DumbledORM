@@ -1,4 +1,3 @@
-
 #DumbledORM
 A PHP Novelty ORM
 
@@ -49,9 +48,9 @@ By changing localhost to the ip 127.0.0.1 instead mysql will be able to resolve 
 
 ###CLI Script generate.php
 
-DumbledORM includes a PHP CLI shell script to automagically generate your database schema model classes.
+DumbledORM includes a PHP script to generate your database schema model classes.
 
-At the command line type ```./generate -h``` for usage
+At the command line type ```./generate.php -h``` for usage
 
 ```
         Generate DumbledORM models.
@@ -68,7 +67,7 @@ At the command line type ```./generate -h``` for usage
 
 ###Builder configuration
 
-The hardcore 1337 way to generate the model, go to the command line and type `php -a` and enter the following commands:
+To generate the model programatically:
 
 		require('config.php');
 		require('dumbledorm.php');
